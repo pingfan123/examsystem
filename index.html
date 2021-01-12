@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: lightskyblue;
+        }
+
+        #content {
+            border: 1px solid gray;
+            width: 800px;
+            height: 450px;
+            margin: 0 auto;
+            margin-top: 150px;
+            padding-top: 50px;
+            text-align: center;
+        }
+
+        #content input {
+            margin-top: 50px;
+            width: 250px;
+            height: 20px;
+        }
+
+        #content span {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div id="content">
+    <h1>用户登录</h1>
+    <form>
+        用户名：&emsp;<input type="text">&emsp;<span></span><br>
+        密码：&emsp;&emsp;<input type="text">&emsp;<span></span><br>
+        <input type="radio" name="identify" style="margin-left:0;width: 20px;" align="left" value="0">学生&emsp;
+        <input type="radio" name="identify" style="margin-left:0;margin-right: 0;width: 20px" value="1">老师<br>
+        <input type="button"
+               style="width: 100px;height: 40px;background-color: #ff7201;text-align: center;line-height: 40px;border:0;"
+               value="登录" onclick="loadXML()">
+    </form>
+</div>
+<script>
+    var input = document.getElementsByTagName('input');
+    var span1 = content.children[1].children[1];
+    var span2 = content.children[1].children[4];
+    function loadXML() {
+        var identity;
+        for(var i = 2;i<input.length;i++) {
+            if(input[i].checked==true) {
+                identity = input[i].value;
+            }
+        }
+        var xmlhttp;
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest()
+        }
+        else {
+            xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
+        }
+        xmlhttp.open('post', 'http://127.0.0.1:3200', true);
+        xmlhttp.send('username=' + input[0].value + '&pwd=' + input[1].value+'&identity='+identity);
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                var opj = JSON.parse(xmlhttp.responseText);
+                if(opj.login) {
+                    if(opj.identity==0){
+                        localStorage.setItem('username',input[0].value);
+                        localStorage.setItem('identity',opj.identity);
+                        window.location.href='./考试界面.html';
+                    }
+                    if(opj.identity==1){
+                        localStorage.setItem('username1',input[0].value);
+                        localStorage.setItem('identity1',opj.identity);
+                        window.location.href='./老师界面.html';
+                    }
+                    }
+                    else if(!opj.login){
+                        alert('登录失败')
+                    }
+            }
+        };
+        var xmlhttp1;
+        if (window.XMLHttpRequest) {
+            xmlhttp1 = new XMLHttpRequest()
+        }
+        else {
+            xmlhttp1 = new ActiveXObject('Microsoft.XMLHTTP');
+        }
+        xmlhttp1.open('post', 'http://127.0.0.1:3210', true);
+        xmlhttp1.send('username=' + input[0].value + '&pwd=' + input[1].value+'&identity='+identity);
+        xmlhttp1.onreadystatechange = function () {
+            if (xmlhttp1.readyState == 4 && xmlhttp.status == 200) {
+                var opj = JSON.parse(xmlhttp1.responseText);
+            }
+        };
+    }
+</script>
+</body>
+</html>

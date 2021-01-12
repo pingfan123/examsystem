@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html body {
+            width:100%;
+            height:100%;
+            background-color: #faebd7;
+        }
+        #wrap {
+            width:100%;
+            height:100%;
+        }
+        #top {
+            position: fixed;
+            top:0;
+            width:100%;
+            height:60px;
+            background-color: #aaaaaa;
+            overflow: hidden;
+        }
+        #top span {
+            font-size: 20px;
+            line-height: 60px;
+        }
+        #top span:first-child {
+            font-size: 20px;
+            margin-left: 10%;
+            line-height: 60px;
+        }
+        #exit {
+            width:80px;
+            height: 60px;
+            background-color: white;
+            float: right;
+            text-align: center;
+            margin-right: 50px;
+        }
+        #exit span {
+            line-height: 60px;
+            font-size: 20px;
+        }
+        #content {
+            width:50%;
+            height:400px;
+            margin-left:25%;
+            border:1px solid black;
+            margin-top: 5%;
+            display: flex;
+        }
+        .box {
+            width:150px;
+            height:200px;
+            background-color: white;
+            margin-left: 20px;
+            margin-top: 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        #correct {
+            width:800px;
+            margin-left: 30%;
+            margin-top: 70px;
+            display: none;
+        }
+        #question {
+            width:785px;
+            height:150px;
+            border:1px solid gray;
+            padding-left: 20px;
+            padding-top: 30px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        #answer {
+            width:785px;
+            height:150px;
+            border:1px solid gray;
+            padding-left: 20px;
+            padding-top: 30px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        #nextquestion {
+            margin: 0 auto;
+            width:150px;
+            height: 40px;
+            background-color: #ffa500;
+            text-align: center;
+            font-size: 20px;
+            line-height: 40px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body onload="loadXML()">
+<div id="wrap">
+    <div id="top">
+        <span>欢迎:</span>
+        <span></span>
+        <span></span>
+        <div id="exit" onclick="exit()">
+            <span>退出</span>
+        </div>
+    </div>
+    <div id="content">
+    </div>
+    <div id="correct">
+        <span style="font-size: 20px;font-weight: 300">当前学生：</span>
+        <span style="font-size: 20px;font-weight: 300"></span>
+        <h2>题目：</h2>
+        <div id="question">
+            <span></span>
+        </div>
+        <h2>回答：</h2>
+        <div id="answer">
+            <span></span>
+        </div>
+        <h2>打分：</h2>
+        <textarea name="" cols="113" rows="13" style="margin-top: 10px;margin-bottom: 10px"></textarea>
+        <div id="nextquestion" onclick="nextquestion()">
+            <h3>下一题</h3>
+        </div>
+    </div>
+</div>
+<script>
+    var content = document.getElementById('content');
+    var correct = document.getElementById('correct');
+    var question = document.getElementById('question');
+    var answer = document.getElementById('answer');
+    var grade = document.getElementsByTagName('textarea');
+    var span1 = correct.children[0];
+    var span2 = correct.children[1];
+    var arr = [];
+    var record = 0;
+    var number = 0;
+    function loadXML() {
+        var top = document.getElementById('top');
+        var topspan = top.children;
+        var content = document.getElementById('content');
+        var getname = localStorage.getItem('username1');
+        var getidentity = localStorage.getItem('identity1');
+        topspan[1].innerHTML=getname;
+        if(getidentity==1) {
+            topspan[2].innerHTML = '老师';
+        }
+        var xmlhttp;
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest()
+        }
+        else {
+            xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
+        }
+        xmlhttp.open('post', 'http://127.0.0.1:3250', true);
+        xmlhttp.send();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                var opj = JSON.parse(xmlhttp.responseText);
+                    for(var i = 0;i<opj.stuname.length;i++) {
+                        if(i%2==0) {
+                            var div = document.createElement('div');
+                        div.setAttribute('class','box');
+                            for(var j = 0;j<2;j++) {
+                            var span = document.createElement('span');
+                            var br = document.createElement('br');
+                            if(j==0) {
+                                span.innerHTML=opj.stuname[i];
+                                div.appendChild(span);
+                                div.appendChild(br);
+                            }
+                            if(j==1) {
+                                //接收答题状态
+                                if(opj.stuname[i+1]=='true') {
+                                    span.innerHTML = '已经交卷';
+                                }
+                               else {
+                                    span.innerHTML = '未交卷';
+                                }
+                                div.appendChild(span);
+                                div.appendChild(br);
+                            }
+                        }
+                            div.setAttribute('onclick','correc(this)');
+                        content.appendChild(div)
+                    }
+                }
+            }
+        };
+    }
+    function correc(_this) {
+        if(_this.children[2].innerHTML=='未交卷') {
+            alert('该学生还未交卷，请批阅其他学生的试卷！')
+        }
+        else {
+            var xmlhttp1;
+            var span = _this.children[0];
+            if (window.XMLHttpRequest) {
+                xmlhttp1 = new XMLHttpRequest()
+            }
+            else {
+                xmlhttp1 = new ActiveXObject('Microsoft.XMLHTTP');
+            }
+            xmlhttp1.open('post', 'http://127.0.0.1:3280', true);
+            xmlhttp1.send('username='+span.innerHTML)
+            console.log(span.innerHTML);
+            xmlhttp1.onreadystatechange = function () {
+                if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200) {
+                    var opj = JSON.parse(xmlhttp1.responseText);
+                    if(opj.fog) {
+                        console.log(opj.fog);
+                        alert('您已经批改完该同学的试卷');
+                    }
+                    else {
+                        content.style.display = 'none';
+                        correct.style.display = 'block';
+                        var xmlhttp;
+                        if (window.XMLHttpRequest) {
+                            xmlhttp = new XMLHttpRequest()
+                        }
+                        else {
+                            xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
+                        }
+                        xmlhttp.open('post', 'http://127.0.0.1:3260', true);
+                        xmlhttp.send('username='+_this.children[0].innerHTML);
+                        xmlhttp.onreadystatechange = function () {
+                            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                                var opj = JSON.parse(xmlhttp.responseText);
+                                arr = JSON.parse(JSON.stringify(opj.answer));
+                                question.children[0].innerHTML=opj.answer[0].question;
+                                answer.children[0].innerHTML=opj.answer[0].answer;
+                                span2.innerHTML = opj.name;
+                            }
+                        };}
+                }
+            };
+        }
+    }
+    function nextquestion() {
+        number++;
+        var grade = document.getElementsByTagName('textarea');
+        record+=Number(grade[0].value);
+            if (number < 2) {
+                question.children[0].innerHTML = '';
+                answer.children[0].innerHTML = '';
+                grade[0].value = '';
+                question.children[0].innerHTML = arr[1].question;
+                answer.children[0].innerHTML = arr[1].answer;
+            }
+            else {
+                if (number == 2) {
+                var xmlhttp;
+                if (window.XMLHttpRequest) {
+                    xmlhttp = new XMLHttpRequest()
+                }
+                else {
+                    xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xmlhttp.open('post', 'http://127.0.0.1:3270', true);
+                    xmlhttp.send('username=' + span2.innerHTML+'&grade='+record);
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        var opj = JSON.parse(xmlhttp.responseText);
+                    }
+                };
+            }
+                correct.style.display = 'none';
+                content.style.display = 'flex';
+            }
+    }
+    function exit() {
+        window.location.href = 'index.html'
+    }
+</script>
+</body>
+</html>
